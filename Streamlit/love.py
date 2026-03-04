@@ -10,3 +10,5 @@ if slt =="Fahad":
     st.image("https://i.pinimg.com/736x/d4/41/f7/d441f74bd102c617af1c82d0b866ac19.jpg")
     st.markdown(" ### Congrss you are win the game!")
     st.text("you win because you love fahad and fahad love his girl")
+    st.markdown("### I love u my girl")
+
