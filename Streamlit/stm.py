@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd 
-import seaborn as sns
-import matplotlib.pyplot as plt 
+
 st.image("https://images.pexels.com/photos/259698/pexels-photo-259698.jpeg",width=500)
 st.title("This is my first app")
 st.subheader("Heart Disease Classification")
@@ -29,16 +28,16 @@ if file:
     st.scatter_chart(x="ASR (World)",y="Crude rate",data=df)
     
     st.metric(label="Accuracy", value="87%", delta="+2%")
-    fig, ax = plt.subplots()
-    sns.scatterplot(
-    data=df,
-    x="ASR (World)",
-    y="Crude rate",
-    hue="Country label",   # ✅ এখানে কাজ করবে
-    ax=ax
-    )
+    # fig, ax = plt.subplots()
+    # sns.scatterplot(
+    # data=df,
+    # x="ASR (World)",
+    # y="Crude rate",
+    # hue="Country label",   # ✅ এখানে কাজ করবে
+    # ax=ax
+    # )
 
-    st.pyplot(fig)
+    # st.pyplot(fig)
 col1, col2 = st.columns(2)
 
 with col1:
