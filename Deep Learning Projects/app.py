@@ -11,7 +11,7 @@ import streamlit as st
 # --------------------------------------------------------------------------- #
 # Configuration
 # --------------------------------------------------------------------------- #
-MODEL_PATH = "https://github.com/AbdullahAlFahad01/ML-Ops/blob/main/Deep%20Learning%20Projects/potato_disease_model.keras"
+MODEL_PATH = "potato_disease_model.keras"
 IMG_SIZE = (256, 256)  # model's expected input size
 
 # IMPORTANT: This order must match the class order your model was trained on.
