@@ -7,6 +7,8 @@ as Early Blight, Late Blight, or Healthy from an uploaded photo.
 import numpy as np
 from PIL import Image
 import streamlit as st
+import sys
+import subprocess
 
 # --------------------------------------------------------------------------- #
 # Configuration
@@ -50,6 +52,26 @@ DISEASE_INFO = {
                   "field hygiene to prevent future infections.",
     },
 }
+
+# --------------------------------------------------------------------------- #
+# Dependency check and installation helper
+# --------------------------------------------------------------------------- #
+def check_and_install_dependencies():
+    """Check if TensorFlow is installed, if not, provide instructions."""
+    try:
+        import tensorflow as tf
+        return True, None
+    except ImportError:
+        error_msg = (
+            "TensorFlow is not installed. Please install it using one of these commands:\n\n"
+            "CPU version:\n"
+            "  pip install tensorflow\n\n"
+            "GPU version (if you have CUDA compatible GPU):\n"
+            "  pip install tensorflow-gpu\n\n"
+            "Or if you're using this in a notebook environment:\n"
+            "  !pip install tensorflow"
+        )
+        return False, error_msg
 
 # --------------------------------------------------------------------------- #
 # Page setup + styling
@@ -196,6 +218,13 @@ st.markdown(
     .info-card p:last-child { margin-bottom:0; }
 
     .footnote { text-align:center; color:#8AA095; font-size:.82rem; margin-top:30px; }
+    .error-box {
+        background:#FDE7E7; border:1px solid #F5C6C6; border-radius:12px;
+        padding:20px; margin:20px 0;
+    }
+    .error-box h4 { color:#C0392B; margin:0 0 10px; }
+    .error-box code { background:#F8F8F8; padding:2px 8px; border-radius:4px; font-size:.85rem; }
+    .error-box .cmd { background:#1B2D24; color:#E8F0EA; padding:12px 16px; border-radius:8px; margin:10px 0; font-family:monospace; font-size:.9rem; }
     </style>
     """,
     unsafe_allow_html=True,
@@ -207,8 +236,76 @@ st.markdown(
 # --------------------------------------------------------------------------- #
 @st.cache_resource(show_spinner=False)
 def load_model():
+    """Load the Keras model. Handles missing dependencies gracefully."""
+    # Check if TensorFlow is installed
+    tf_available, error_msg = check_and_install_dependencies()
+    
+    if not tf_available:
+        st.error("🚨 TensorFlow not installed!")
+        st.markdown(
+            f"""
+            <div class="error-box">
+                <h4>⚠️ Missing Dependency</h4>
+                <p>This app requires <strong>TensorFlow</strong> to load and run the machine learning model.</p>
+                <p>Please install it using one of these commands:</p>
+                <div class="cmd">pip install tensorflow</div>
+                <p>If you have a compatible GPU, you can install the GPU version:</p>
+                <div class="cmd">pip install tensorflow-gpu</div>
+                <p>After installation, restart the Streamlit app.</p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        st.stop()
+    
     import tensorflow as tf
-    return tf.keras.models.load_model(MODEL_PATH)
+    
+    # Check if model file exists
+    import os
+    if not os.path.exists(MODEL_PATH):
+        st.error(f"🚨 Model file not found!")
+        st.markdown(
+            f"""
+            <div class="error-box">
+                <h4>⚠️ Missing Model File</h4>
+                <p>The model file <code>{MODEL_PATH}</code> was not found in the current directory.</p>
+                <p>Make sure you have:</p>
+                <ul>
+                    <li>Downloaded the model file <code>{MODEL_PATH}</code></li>
+                    <li>Placed it in the same folder as this Streamlit app</li>
+                </ul>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        st.stop()
+    
+    try:
+        # Force TensorFlow to use CPU to avoid GPU memory issues
+        tf.config.set_visible_devices([], 'GPU')
+        model = tf.keras.models.load_model(MODEL_PATH)
+        return model
+    except Exception as e:
+        st.error("🚨 Failed to load the model!")
+        st.markdown(
+            f"""
+            <div class="error-box">
+                <h4>❌ Model Loading Error</h4>
+                <p>Could not load the Keras model. Error details:</p>
+                <code style="display:block; background:#F8F8F8; padding:10px; border-radius:4px; margin:10px 0; white-space:pre-wrap; font-size:.85rem;">
+{str(e)}
+                </code>
+                <p>Possible issues:</p>
+                <ul>
+                    <li>The model file might be corrupted or in an incompatible format</li>
+                    <li>Different TensorFlow versions (model saved with a different version)</li>
+                    <li>Missing custom objects or layers in the model</li>
+                </ul>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        st.stop()
 
 
 def predict(image: Image.Image):
@@ -262,11 +359,7 @@ if file is not None:
             try:
                 probs = predict(image)
             except Exception as e:  # noqa: BLE001
-                st.error(
-                    "Couldn't run the model. Make sure "
-                    f"`{MODEL_PATH}` is in the same folder as this app.\n\n"
-                    f"Details: {e}"
-                )
+                st.error(f"An error occurred during diagnosis: {str(e)}")
                 st.stop()
 
         top_idx = int(np.argmax(probs))
