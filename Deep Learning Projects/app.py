@@ -8,6 +8,7 @@ import numpy as np
 from PIL import Image
 import streamlit as st
 import tensorflow as tf
+from tensorflow.keras import models
 # --------------------------------------------------------------------------- #
 # Configuration
 # --------------------------------------------------------------------------- #
