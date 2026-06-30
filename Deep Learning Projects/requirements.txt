@@ -1,4 +1,5 @@
-streamlit
-tensorflow-cpu==2.19.0
-pillow
-numpy
+git rm -r --cached "Deep Learning Projects"        # if needed
+git mv "Deep Learning Projects" deep-learning-projects
+git add -A
+git commit -m "Use pip path: remove conda env, rename folder without spaces"
+git push
