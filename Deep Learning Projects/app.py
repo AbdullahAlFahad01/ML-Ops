@@ -7,7 +7,7 @@ as Early Blight, Late Blight, or Healthy from an uploaded photo.
 import numpy as np
 from PIL import Image
 import streamlit as st
-
+import tensorflow as tf
 # --------------------------------------------------------------------------- #
 # Configuration
 # --------------------------------------------------------------------------- #
